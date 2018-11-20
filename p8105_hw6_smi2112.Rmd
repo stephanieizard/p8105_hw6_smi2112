@@ -14,12 +14,12 @@ library(tidyverse)
 
 ###Reading and manipulating the dataframe:
 
-* Created variable city_state to include both city and state
-* Created binary variable case_status to indicate whether the homicide is solved or unsolved
+* Created variable "city_state" to include both city and state
+* Created binary variable "resolved" to indicate whether the homicide is solved or unsolved
 * Omitted cities Dallas, TX; Phoenix, AZ; and Kansas City, MO because these locations don’t report victim race
 * Omitted Tulsa, AL because this is a data entry mistake
-* Modified victim_race to have categories white and non-white, with white as the reference category
-* Made sure the variable victim_age was numeric
+* Modified variable "victim_race" to have categories white and non-white, with white as the reference category
+* Made sure the variable "victim_age" was numeric
 
 ```{r}
 homicide_data <- read_csv("./data/homicide-data.csv", na = c("", "NA", "Unknown")) %>%
@@ -43,28 +43,6 @@ homicide_data <- read_csv("./data/homicide-data.csv", na = c("", "NA", "Unknown"
          city_state != "Tulsa, AL") %>% 
   select(-victim_first, -victim_last)
 ```
-
-<<<<<<< HEAD
-=======
-
-###Fitting a logistic regression model to Baltimore, MD
-* Outcome: resolved vs unresolved (case_status)
-* Predictors: victim age (victim_age), sex (victim_sex), and race (victim_race)
-
-```{r}
-baltimore_df <- homicide_data %>% 
-  filter(city_state == "Baltimore, MD")
-
-baltimore_fit <- baltimore_df %>% 
-  glm(resolved ~ victim_age + victim_sex + victim_race, data = ., family = binomial())
-
-baltimore_fit %>% 
-  broom::tidy() %>% 
-  mutate(OR = exp(estimate)) %>% 
-  select(term, OR) %>% 
-  knitr::kable(digits = 3)
-```
->>>>>>> a2a2d1c08395c12a3df6c7f48b065d0f2b13a60c
 
 ###Fitting a logistic regression model to Baltimore, MD
 * Outcome: resolved vs unresolved (case_status)
