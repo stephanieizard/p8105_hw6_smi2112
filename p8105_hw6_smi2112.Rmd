@@ -60,6 +60,7 @@ baltimore_fit %>%
   mutate(OR = exp(estimate),
          ci_lower = exp(estimate - 1.96*std.error),
          ci_upper = exp(estimate + 1.96*std.error)) %>% 
+  filter(term == "victim_racenon-white") %>% 
   select(term, OR, ci_lower, ci_upper) %>% 
   knitr::kable(digits = 3)
 ```
