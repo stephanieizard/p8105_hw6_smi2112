@@ -44,7 +44,7 @@ homicide_data <- read_csv("./data/homicide-data.csv", na = c("", "NA", "Unknown"
   select(-victim_first, -victim_last)
 ```
 
-###Fitting a logistic regression model to Baltimore, MD
+###Fitting a logistic regression model to Baltimore, MD:
 * Outcome: resolved vs unresolved (case_status)
 * Predictors: victim age (victim_age), sex (victim_sex), and race (victim_race)
 
@@ -57,9 +57,11 @@ baltimore_fit <- baltimore_df %>%
 
 baltimore_fit %>% 
   broom::tidy() %>% 
-  mutate(OR = exp(estimate)) %>% 
-  select(term, OR) %>% 
+  mutate(OR = exp(estimate),
+         ci_lower = exp(estimate - 1.96*std.error),
+         ci_upper = exp(estimate + 1.96*std.error)) %>% 
+  select(term, OR, ci_lower, ci_upper) %>% 
   knitr::kable(digits = 3)
 ```
 
-> need to add 95% CI for OR
+
