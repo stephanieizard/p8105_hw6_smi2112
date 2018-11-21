@@ -15,7 +15,7 @@ library(tidyverse)
 ###Reading and manipulating the dataframe:
 
 * Created variable "city_state" to include both city and state
-* Created binary variable "resolved" to indicate whether the homicide is solved or unsolved
+* Created binary variable "resolved" to indicate whether the homicide is solved or unsolved (1 = solved, 0 = unsolved)
 * Omitted cities Dallas, TX; Phoenix, AZ; and Kansas City, MO because these locations don’t report victim race
 * Omitted Tulsa, AL because this is a data entry mistake
 * Modified variable "victim_race" to have categories white and non-white, with white as the reference category
@@ -61,7 +61,10 @@ baltimore_fit %>%
          ci_lower = exp(estimate - 1.96*std.error),
          ci_upper = exp(estimate + 1.96*std.error)) %>% 
   filter(term == "victim_racenon-white") %>% 
-  select(term, OR, ci_lower, ci_upper) %>% 
+  select(OR, ci_lower, ci_upper) %>% 
+  rename("Odds Ratio" = OR,
+         "95% CI Lower Bound" = ci_lower,
+         "95% CI Upper Bound" = ci_upper) %>% 
   knitr::kable(digits = 3)
 ```
 
@@ -82,6 +85,10 @@ homicide_data_glm <- homicide_data %>%
   select(city_state, OR, ci_lower, ci_upper) 
 
 homicide_data_glm %>% 
+  rename(City = city_state,
+         "Odds Ratio" = OR,
+         "95% CI Lower Bound" = ci_lower,
+         "95% CI Upper Bound" = ci_upper) %>% 
   knitr::kable(digits = 3)
 ```
 
@@ -89,22 +96,23 @@ homicide_data_glm %>%
 
 * Organized according to OR
 
-```{r}
+```{r fig.height = 8, fig.width = 8}
 homicide_data_glm %>%
   mutate(city_state = fct_reorder(city_state, OR)) %>% 
   group_by(city_state) %>%
   ggplot(aes(x = city_state, y = OR)) +
-    geom_point(color = "darkslateblue") +
-    geom_errorbar(aes(ymax = ci_lower, ymin = ci_upper)) +
-    labs(x = "City",
-         y = "Odds",
-         title = "Odds by city",
+    geom_point(color = "coral4", size = 1.5) +
+    geom_errorbar(aes(ymax = ci_lower, ymin = ci_upper), color = "coral1") +
+    labs(x = "City, State",
+         y = "Odds Ratio",
+         title = "Odds ratios for solving homicides comparing black victims to white victims",
+         subtitle = "All models are adjusted for victim sex and victim age",
          caption = "Error bars represent the 95% confidence interval") +
     coord_flip() +
     theme_minimal()
 ```
 
-Comments: Tampa, FL has the highest odds
+Comments: Tampa, FL, Birmingham, AL, and Durham, ND have the 3 highest odds ratio for solving homicides comparing black victims to white victims, adjusting for victim age and sex. Additionally, these 3 cities are the only cities with an OR estimate greater than 1.0, or having higher odds of solving a homicide with a black victim compared to solving a homicide with a white victim.
 
 ##Problem 2
 
