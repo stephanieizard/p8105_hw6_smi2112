@@ -142,16 +142,41 @@ The proposed regression model for the factors that underly birthweight is based 
 ####Plotting model residuals against fitted values:
 
 ```{r}
-lin_mod <- lm(birthweight ~ length + head_circ + gest_age + sex + malform, data = bw_df)
+hyp_mod <- lm(birthweight ~ length + head_circ + gest_age + sex + malform, data = bw_df)
 
 bw_df %>% 
-  add_predictions(lin_mod) %>% 
-  add_residuals(lin_mod) %>% 
+  add_predictions(hyp_mod) %>% 
+  add_residuals(hyp_mod) %>% 
   ggplot(aes(x = pred, y = resid)) +
     geom_point() +
     geom_smooth(color = "darkslateblue", se = FALSE)
 ```
 
+Comparing to other models:
+
+```{r}
+bw_df_cross <- crossv_mc(bw_df, 100)
+
+bw_df_cross <- bw_df_cross %>% 
+  mutate(hyp_mod = map(train, ~lm(birthweight ~ length + head_circ + gest_age + sex + malform, data = .x)),
+         comp_mod1 = map(train, ~lm(birthweight ~ length + gest_age, data = .x)),
+         comp_mod2 = map(train, ~lm(birthweight ~ length + head_circ + sex + length*head_circ + head_circ*sex + length*sex, data = .x))) %>% 
+  mutate(rmse_hyp_mod = map2_dbl(hyp_mod, test, ~rmse(model = .x, data = .y)),
+         rmse_comp_mod1 = map2_dbl(comp_mod1, test, ~rmse(model = .x, data = .y)),
+         rmse_comp_mod2 = map2_dbl(comp_mod2, test, ~rmse(model = .x, data = .y)))
+
+bw_df_cross %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = rmse) %>% 
+  mutate(model = str_replace(model, "rmse_", ""),
+         model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse, fill = model)) + 
+    geom_violin(alpha = 0.6) +
+    labs(x = "Model", y = "RMSE", title = "RMSE for each Model") +
+    viridis::scale_fill_viridis(option = "viridis", discrete = TRUE, name = "Model") +
+    theme_minimal()
+    
+```
 
 
 
