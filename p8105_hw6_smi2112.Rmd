@@ -8,6 +8,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(modelr)
 ```
 
 ##Problem 1
@@ -112,27 +113,44 @@ homicide_data_glm %>%
     theme_minimal()
 ```
 
-Comments: Tampa, FL, Birmingham, AL, and Durham, ND have the 3 highest odds ratio for solving homicides comparing black victims to white victims, adjusting for victim age and sex. Additionally, these 3 cities are the only cities with an OR estimate greater than 1.0, or having higher odds of solving a homicide with a black victim compared to solving a homicide with a white victim.
+Comments: Tampa, FL, Birmingham, AL, and Durham, NC have the 3 highest odds ratio for solving homicides comparing black victims to white victims, adjusting for victim age and sex. Additionally, these 3 cities are the only cities with an OR estimate greater than 1.0, or having higher odds of solving a homicide with a black victim compared to solving a homicide with a white victim.
 
 ##Problem 2
 
 ####Loading and cleaning the data:
 
-* List variables changed here
-
 ```{r}
 bw_df <- read_csv("./data/birthweight.csv") %>% 
-  janitor::clean_names()
-
-glimpse(bw_df)
+  janitor::clean_names() %>% 
+  select(bwt, blength, bhead, malform, gaweeks, babysex) %>% 
+  rename(birthweight = bwt,
+         length = blength,
+         head_circ = bhead,
+         gest_age = gaweeks,
+         sex = babysex) %>% 
+  mutate(malform = as.factor(malform),
+         sex = as.factor(sex),
+         length = as.numeric(length),
+         head_circ = as.numeric(head_circ),
+         gest_age = as.numeric(gest_age),
+         birthweight = as.numeric(birthweight))
 
 ```
 
-The hypothesized model will be based of a hypothesized structure for the factors that underly birthweight.
+The proposed regression model for the factors that underly birthweight is based off of a hypothesized structure, focusing on anthropometric features of the baby. The outcome will be weight at birth in grams (birthweight). Main exposures include baby's length at birth in cm (length), baby's head circumference in cm (head_circ), and the presence of malformations that could affect weight (malform). The model is further adjusted for the variables gestational age in weeks (gest_age), and baby's sex (sex), as these are hypothesized to confound the association between anthropometric features and birthweight.
 
-* Outcome: birthweight
-* Main exposure: length
-* Covariates: gestational age in weeks (gest_age), mother's weight gain during preganncy (wt_gain)
+####Plotting model residuals against fitted values:
+
+```{r}
+lin_mod <- lm(birthweight ~ length + head_circ + gest_age + sex + malform, data = bw_df)
+
+bw_df %>% 
+  add_predictions(lin_mod) %>% 
+  add_residuals(lin_mod) %>% 
+  ggplot(aes(x = pred, y = resid)) +
+    geom_point() +
+    geom_smooth(color = "darkslateblue", se = FALSE)
+```
 
 
 
