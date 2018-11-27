@@ -45,18 +45,16 @@ homicide_data <- read_csv("./data/homicide-data.csv", na = c("", "NA", "Unknown"
   select(-victim_first, -victim_last)
 ```
 
-###Fitting a logistic regression model to Baltimore, MD:
+###Fitting a logistic regression model for Baltimore, MD:
 * Outcome: resolved vs unresolved (case_status)
 * Predictors: victim age (victim_age), sex (victim_sex), and race (victim_race)
 
 ```{r}
-baltimore_df <- homicide_data %>% 
-  filter(city_state == "Baltimore, MD")
-
-baltimore_fit <- baltimore_df %>% 
+baltimore_glm <- homicide_data %>% 
+  filter(city_state == "Baltimore, MD") %>% 
   glm(resolved ~ victim_age + victim_sex + victim_race, data = ., family = binomial())
 
-baltimore_fit %>% 
+baltimore_glm %>% 
   broom::tidy() %>% 
   mutate(OR = exp(estimate),
          ci_lower = exp(estimate - 1.96*std.error),
@@ -95,7 +93,7 @@ homicide_data_glm %>%
 
 ###Plotting estimated ORs and CIs for each city:
 
-* Organized according to OR
+* Organized according to descending OR
 
 ```{r fig.height = 8, fig.width = 8}
 homicide_data_glm %>%
@@ -106,14 +104,14 @@ homicide_data_glm %>%
     geom_errorbar(aes(ymax = ci_lower, ymin = ci_upper), color = "coral1") +
     labs(x = "City, State",
          y = "Odds Ratio",
-         title = "Odds ratios for solving homicides comparing black victims to white victims",
+         title = "Odds ratios for solving homicides comparing non-white victims to white victims",
          subtitle = "All models are adjusted for victim sex and victim age",
          caption = "Error bars represent the 95% confidence interval") +
     coord_flip() +
     theme_minimal()
 ```
 
-Comments: Tampa, FL, Birmingham, AL, and Durham, NC have the 3 highest odds ratio for solving homicides comparing black victims to white victims, adjusting for victim age and sex. Additionally, these 3 cities are the only cities with an OR estimate greater than 1.0, or having higher odds of solving a homicide with a black victim compared to solving a homicide with a white victim.
+Comments: Tampa, FL, Birmingham, AL, and Durham, NC have the 3 highest odds ratio for solving homicides comparing non-white victims to white victims, adjusting for victim age and victim sex. These 3 cities are the only cities with an OR estimate greater than 1.0, or having greater odds of a homicide with a non-white victim being solved compared to a homicide with a white victim being solved. Many of the ORs are insignificant becuase their confidence intervals include the null value (1.0).
 
 ##Problem 2
 
